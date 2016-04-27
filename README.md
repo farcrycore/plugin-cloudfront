@@ -7,3 +7,8 @@ Support for other CloudFront features may be added in the future.
 
 - extract the plugin to `/farcry/plugins/cloudfront`
 - register the plugin in your `farcryContructor.cfm`
+
+## Configure CloudFront
+
+1. Configure CloudFront to cache objects based on the device type
+2. Add the cookie name `FARCRYDEVICETYPE` to the whitelist of forwarded cookies
