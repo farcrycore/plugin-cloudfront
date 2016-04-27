@@ -1,0 +1,9 @@
+# Amazon CloudFront plugin for FarCry Core 7.x
+
+This plugin will add support for device detection using [CloudFront device type headers](http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/header-caching.html#header-caching-web-device).
+Support for other CloudFront features may be added in the future.
+
+## Installation
+
+- extract the plugin to `/farcry/plugins/cloudfront`
+- register the plugin in your `farcryContructor.cfm`
