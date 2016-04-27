@@ -10,5 +10,10 @@ Support for other CloudFront features may be added in the future.
 
 ## Configure CloudFront
 
-1. Configure CloudFront to cache objects based on the device type
+1. Configure CloudFront to cache objects based on the CloudFront device type headers
+
+![Whitelist device type headers](docs/cf-whitelist-headers.jpg)
+
 2. Add the cookie name `FARCRYDEVICETYPE` to the whitelist of forwarded cookies
+
+![Whitelist cookies](docs/cf-whitelist-cookies.jpg)
