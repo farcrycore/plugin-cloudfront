@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<webtop>
+	<section id="admin">
+		<subsection id="general">
+			<menu id="systemstatus">
+				<menuitem id="cloudfrontstatus" label="CloudFront Status" typename="configAWSCloudFront" bodyview="webtopBody" />
+			</menu>
+		</subsection>
+	</section>
+</webtop>
