@@ -171,9 +171,9 @@ component displayname="AWS CloudFront Library" {
 		if (ARGUMENTS.distributionId != '')
 			distributionId = ARGUMENTS.distributionId;
 		else if (ARGUMENTS.distributionName == 'WEB') {
-			distributionId = application.fapi.getConfig('awscloudfront','webDistributionId', '');
+			distributionId = application.fapi.getConfig('awscloudfront','wwwDistributionId', '');
 			if (distributionId == "") {
-				throw(type='cloudfront.getDistributionId.webDistributionId', message="Web Distribution Id has not been set", detail="Set value in Configuration 'AWS CloudFront Service' ");
+				throw(type='cloudfront.getDistributionId.wwwDistributionId', message="WWW Distribution Id has not been set", detail="Set value in Configuration 'AWS CloudFront Service' ");
 			}
 		} else if (ARGUMENTS.distributionName == 'CDN') {
 			distributionId = application.fapi.getConfig('awscloudfront','cdnDistributionId', '');

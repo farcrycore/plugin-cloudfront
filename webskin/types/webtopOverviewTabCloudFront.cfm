@@ -33,7 +33,7 @@ FARCRY INCLUDE FILES
 <cfparam name="FORM.URLs"           default="">
 <cfparam name="URL.InvalidationId"  default="">
 
-<!--- TODO: set to WEB ---><cfset distributionName = "CDN">
+<cfset distributionName = "Web">
 
 <cfset urlOverview = "">
 <cfloop list="#structKeyList(URL)#" index="key">
@@ -141,7 +141,7 @@ START WEBSKIN
 	<cfloop list="#URL.InvalidationId#" index="key">
 		<cfset stInvalidation = oCloudFront.getInvalidateById(InvalidationId=key, distributionName=distributionName)>
 	    <tr valign="top">
-	        <td>#stInvalidation.Status#</td>
+	        <td>#Replace(stInvalidation.Status, 'InProgress', 'In Progress')#</td>
 	        <td>
 		        <cfif Len(stInvalidation.Path) GT 80>
 					<cfset pos = find('/', stInvalidation.Path, 60)>

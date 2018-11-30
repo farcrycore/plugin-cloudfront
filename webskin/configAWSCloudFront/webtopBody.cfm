@@ -6,7 +6,8 @@
 	<cfparam name="URL.distributionId" default="">
 	<cfparam name="URL.maxrows"        default="10">
 	<cfparam name="URL.debug"          default="0">
-	
+	<cfparam name="URL.formName"       default="URL">
+
 	<cfset accessID  = application.fapi.getConfig('awscloudfront','accessID', '')>
 	<cfset secretKey = application.fapi.getConfig('awscloudfront','secretKey', '')>
 	
@@ -37,20 +38,20 @@
 	</thead>
 	<tbody>
 	<cfloop collection="#stDistributions#" index="id" item="stDistribution">
-		<cfset farcryName = stSiteDistribution[id]?:''>
+		<cfset distributionName = stSiteDistribution[id]?:''>
 
 		<tr valign="top">
 			<td>#id#</td>
-			<td>#farcryName#</td>
+			<td>#distributionName#</td>
 			<td>
 				<cfloop list="#stDistribution.OriginDomainNames#" item="OriginDomainName">#OriginDomainName#<br /></cfloop>
 			</td>
 			<td>#stDistribution.DomainName#</td>
 			<td>
-				<cfif farcryName != ''>
-					<cfset urlModel = application.fapi.fixURL(addvalues='type=configAWSCloudFront&view=webtopPageModal&bodyView=webtopBodyInvalidations&distributionId=#id#&maxrows=#url.maxrows#&debug=#URL.debug#&farcryName=#farcryName#',removevalues='') />
+				<cfif distributionName != ''>
+					<cfset urlModel = application.fapi.fixURL(addvalues='type=configAWSCloudFront&view=webtopPageModal&bodyView=webtopBodyInvalidations&distributionId=#id#&maxrows=#url.maxrows#&debug=#URL.debug#&distributionName=#distributionName#&formName=#URL.formName#',removevalues='') />
 					<a href="#urlModel#" 
-					   onclick="$fc.objectAdminAction('CloudFront Invalidations for #farcryName#', this.href, { onHidden : function(){} }); return false;"
+					   onclick="$fc.objectAdminAction('CloudFront Invalidations for #distributionName#', this.href, { onHidden : function(){} }); return false;"
 					   class="btn"  
 					>Invalidations</a>
 				</cfif>

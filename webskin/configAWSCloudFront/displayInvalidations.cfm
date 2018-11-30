@@ -15,7 +15,7 @@
 <tbody>
 <cfloop array="#aCdnInvalidations#" item="stInvalidation">
     <tr>
-        <td>#stInvalidation.Status#</td>
+		<td>#Replace(stInvalidation.Status, 'InProgress', 'In Progress')#</td>
         <td>#stInvalidation.Path#</td>
         <td>#DateFormat(stInvalidation.CreateTime)# #TimeFormat(stInvalidation.CreateTime)#</td>
     </tr>
