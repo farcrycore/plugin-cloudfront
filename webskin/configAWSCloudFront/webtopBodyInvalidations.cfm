@@ -14,7 +14,7 @@
 	
 	<cfoutput>
 		<h3 style="color:##0e65a2"><span title="URL.maxrows=#URL.maxrows#">Last #URL.maxrows# records</span> Invalidations for #URL.distributionName#</h3>
-		[ <a href="#CGI.query_string#" class="linkReload"><i class="fa fa-refresh"></i> Reload</a> |
+		[ <a href="#urlAjaxReload#" class="linkReload"><i class="fa fa-refresh"></i> Reload</a> |
 		<cfif URL.Debug>
 			<a href="#Replace(urlAjaxReload, 'debug=1', 'debug=0')#" class="linkReload"><i class="fa fa-bug"></i> Turn Debug Off</a>
 		<cfelse>
