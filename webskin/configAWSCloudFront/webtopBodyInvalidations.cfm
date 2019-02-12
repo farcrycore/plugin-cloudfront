@@ -15,11 +15,6 @@
 	<cfoutput>
 		<h3 style="color:##0e65a2"><span title="URL.maxrows=#URL.maxrows#">Last #URL.maxrows# records</span> Invalidations for #URL.distributionName#</h3>
 		[ <a href="#urlAjaxReload#" class="linkReload"><i class="fa fa-refresh"></i> Reload</a> |
-		<cfif URL.Debug>
-			<a href="#Replace(urlAjaxReload, 'debug=1', 'debug=0')#" class="linkReload"><i class="fa fa-bug"></i> Turn Debug Off</a>
-		<cfelse>
-			<a href="#Replace(urlAjaxReload, 'debug=0', 'debug=1')#" class="linkReload"><i class="fa fa-bug"></i> Turn Debug On</a>
-		</cfif>
 		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=10')#" class="linkReload"><i class="fa fa-table"></i> 10 Rows</a>
 		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=50')#" class="linkReload"><i class="fa fa-table"></i> 50 Rows</a>
 		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=100')#" class="linkReload"><i class="fa fa-table"></i> 100 Rows</a>
