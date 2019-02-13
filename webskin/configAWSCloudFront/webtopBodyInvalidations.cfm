@@ -13,11 +13,11 @@
 	<cfset urlAjaxReload = ReplaceNoCase(urlAjaxReload, 'bodyView=webtopBodyInvalidations', '')>
 	
 	<cfoutput>
-		<h3 style="color:##0e65a2"><span title="URL.maxrows=#URL.maxrows#">Last #URL.maxrows# records</span> Invalidations for #URL.distributionName#</h3>
+		<h3 style="color:##0e65a2"><span id="headerInvalidations">Last #URL.maxrows# records</span> Invalidations for #URL.distributionName#</h3>
 		[ <a href="#urlAjaxReload#" class="linkReload"><i class="fa fa-refresh"></i> Reload</a> |
-		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=10')#" class="linkReload"><i class="fa fa-table"></i> 10 Rows</a>
-		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=50')#" class="linkReload"><i class="fa fa-table"></i> 50 Rows</a>
-		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=100')#" class="linkReload"><i class="fa fa-table"></i> 100 Rows</a>
+		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=10')#"  data-maxrows="10"  class="linkReload"><i class="fa fa-table"></i> 10 Rows</a>
+		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=50')#"  data-maxrows="50"  class="linkReload"><i class="fa fa-table"></i> 50 Rows</a>
+		| <a href="#Replace(urlAjaxReload, 'maxrows=#url.maxrows#', 'maxrows=100')#" data-maxrows="100" class="linkReload"><i class="fa fa-table"></i> 100 Rows</a>
 		]
 	</cfoutput>
 	
@@ -28,7 +28,8 @@
 	<skin:onReady><script type="text/javascript"><cfoutput>
 		
 		$j(".linkReload").bind("click",function(){
-
+			$j("##headerInvalidations").html('Last ' + $j(this).attr('data-maxrows') + ' records');
+			
 			$j("##displayInvalidations").html('<p>reloading ...<p>');
 			$j.ajax({
 				url			: $j(this).attr('href'),
