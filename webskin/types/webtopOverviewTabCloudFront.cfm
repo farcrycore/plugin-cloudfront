@@ -59,7 +59,7 @@ FARCRY INCLUDE FILES
 		<cfset URL.InvalidationId = ListAppend(URL.InvalidationId, stResult.InvalidationId)>
 	</cfloop>
 
-	<cflocation url="/webtop/edittabOverview.cfm?#urlOverview#&InvalidationId=#URL.InvalidationId#">
+	<cflocation addtoken="false" url="/webtop/edittabOverview.cfm?#urlOverview#&InvalidationId=#URL.InvalidationId#">
 
 </ft:processform>
 
