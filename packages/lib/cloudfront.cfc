@@ -5,43 +5,46 @@ component displayname="AWS CloudFront Library" {
 			string distributionId="",
 			number maxrows=20
 		) {
-			//var accessID       = application.fapi.getConfig('awscloudfront','accessID');
-			//var secretKey      = application.fapi.getConfig('awscloudfront','secretKey');
 			var distributionId = getDistributionId(ARGUMENTS.distributionName, ARGUMENTS.distributionId);
-			
-			//var awsCredentials    = createObject("java", 'com.amazonaws.auth.BasicAWSCredentials').init(accessID,secretKey);
-			//var cloudFrontService = createobject("java","com.amazonaws.services.cloudfront.AmazonCloudFrontClient").init( awsCredentials);
-			var cloudFrontService =  getClient();
-			
+			var cloudFrontService = getClient();
+
 			try {
 				var aResults = [];
-				var ListInvalidationsRequest = createobject("java","com.amazonaws.services.cloudfront.model.ListInvalidationsRequest").init();
-				ListInvalidationsRequest.setdistributionId(distributionId);
-				
-				var listInvalidations = cloudFrontService.listInvalidations(ListInvalidationsRequest);
-				
-				var InvalidationRequest = createobject("java","com.amazonaws.services.cloudfront.model.GetInvalidationRequest").init();
-				
-				var aInvalidationList = listInvalidations.getInvalidationList().getItems();
-	// aInvalidationList.slice( offset=0, arguments.maxrows )
-				for( var i in aInvalidationList) {
-					InvalidationRequest.setId(i.getId());
-					InvalidationRequest.setdistributionId(distributionId);
+				var ListInvalidationsRequest = createobject("java","software.amazon.awssdk.services.cloudfront.model.ListInvalidationsRequest")
+					.builder()
+					.distributionId(distributionId)
+					.build();
+
+				var listInvalidationsResponse = cloudFrontService.listInvalidations(ListInvalidationsRequest);
+				var aInvalidationList = listInvalidationsResponse.invalidationList().items();
+
+				for (var i in aInvalidationList) {
+					var InvalidationRequest = createobject("java","software.amazon.awssdk.services.cloudfront.model.GetInvalidationRequest")
+						.builder()
+						.id(i.id())
+						.distributionId(distributionId)
+						.build();
+
 					var Invalidation = cloudFrontService.getInvalidation(InvalidationRequest);
-				
-					aResults.append({"InvalidationId": i.getId(), "CreateTime": i.getCreateTime(), "Status": i.getStatus(), "Path": Invalidation.getInvalidation().getInvalidationBatch().getPaths().getItems()[1]})
-				
+
+					aResults.append({
+						"InvalidationId": i.id(),
+						"CreateTime": i.createTime(),
+						"Status": i.status(),
+						"Path": Invalidation.invalidation().invalidationBatch().paths().items()[1]
+					});
+
 					if (aResults.len() == arguments.maxrows) break;
 				}
-					
+
 			} catch (any error) {
 				dump(var=distributionId, label="listInvalidations: no invalitions for this distribution");
 				dump(var=error, label="Error", abort=true);
 			}
-			
-			return aResults
-		}	
-		
+
+			return aResults;
+		}
+
 	    public struct function invalidatePath(
 	    	required string file,
 	    	string distributionName="",
@@ -52,32 +55,39 @@ component displayname="AWS CloudFront Library" {
 
 			stReturn['arguments']      = arguments;
 			stReturn['distributionId'] = distributionId;
-			
-	        var cloudFrontService          = getClient();
-	        var paths                      = createobject("java","com.amazonaws.services.cloudfront.model.Paths").init();
-	        var invalidationBatch          = createobject("java", "com.amazonaws.services.cloudfront.model.InvalidationBatch").init();
-	        var createInvalidationRequest  = createobject("java","com.amazonaws.services.cloudfront.model.CreateInvalidationRequest").init();
-	        var createInvalidationResponse = "";
-	        var CallerReference            = CreateUUID();
-	
-	        paths.setItems([ arguments.file ]);
-	        paths.setQuantity(1);
-	        invalidationBatch.setPaths(paths);
-	        invalidationBatch.setCallerReference(CallerReference);
-	        createInvalidationRequest.setdistributionId(distributionId);
-	        createInvalidationRequest.setInvalidationBatch(invalidationBatch);
-	
+
+	        var cloudFrontService = getClient();
+	        var CallerReference   = CreateUUID();
+
+	        var createInvalidationRequest = createobject("java","software.amazon.awssdk.services.cloudfront.model.CreateInvalidationRequest")
+	        	.builder()
+	        	.distributionId(distributionId)
+	        	.invalidationBatch(
+	        		createobject("java","software.amazon.awssdk.services.cloudfront.model.InvalidationBatch")
+	        			.builder()
+	        			.callerReference(CallerReference)
+	        			.paths(
+	        				createobject("java","software.amazon.awssdk.services.cloudfront.model.Paths")
+	        					.builder()
+	        					.items([ arguments.file ])
+	        					.quantity(1)
+	        					.build()
+	        			)
+	        			.build()
+	        	)
+	        	.build();
+
 	        try {
-	            createInvalidationResponse = cloudFrontService.createInvalidation(createInvalidationRequest);
-	
-	            stReturn['InvalidationId'] = createInvalidationResponse.getInvalidation().getId();
-	            stReturn['Status'] = createInvalidationResponse.getInvalidation().getStatus();
-	
-	            stReturn['CallerReference'] = CallerReference
+	            var createInvalidationResponse = cloudFrontService.createInvalidation(createInvalidationRequest);
+
+	            stReturn['InvalidationId'] = createInvalidationResponse.invalidation().id();
+	            stReturn['Status'] = createInvalidationResponse.invalidation().status();
+
+	            stReturn['CallerReference'] = CallerReference;
 	            stReturn['success'] = true;
-	            stReturn['message'] = "Submitted to CloudFront"
+	            stReturn['message'] = "Submitted to CloudFront";
 	        }
-	        catch (com.amazonaws.services.cloudfront.model.TooManyInvalidationsInProgressException error){
+	        catch (software.amazon.awssdk.services.cloudfront.model.TooManyInvalidationsInProgressException error){
 	            stReturn['error']   = error;
 	            stReturn['success'] = false;
 	            stReturn['message'] = "Too Many Invalidations In Progress";
@@ -87,87 +97,106 @@ component displayname="AWS CloudFront Library" {
 	        	stReturn['success'] = false;
 	        	stReturn['message'] = "#error.Message#. #error.Detail#";
 	        }
-	
+
 	        return stReturn;
 	    }
-	
+
 		public struct function getDistributions(){
-			
+
 			var stDistributions = {};
 			var stDistribution = {};
 			var aOrigins       = [];
 			var stOrigin       = {};
-			
-			var cloudFrontService =  getClient();
-	
-			var ListDistributionsRequest = createobject("java","com.amazonaws.services.cloudfront.model.ListDistributionsRequest").init();
+
+			var cloudFrontService = getClient();
+
+			var ListDistributionsRequest = createobject("java","software.amazon.awssdk.services.cloudfront.model.ListDistributionsRequest")
+				.builder()
+				.build();
 			var ListDistributionsResult = cloudFrontService.listDistributions(ListDistributionsRequest);
-			var aDistributions = ListDistributionsResult.getDistributionList().getItems();
-			
+			var aDistributions = ListDistributionsResult.distributionList().items();
+
 			for (stDistribution in aDistributions) {
-		
-			stDistributions[stDistribution.getId()] = {};
-			stDistributions[stDistribution.getId()]['DomainName'] = stDistribution.getDomainName();
-			stDistributions[stDistribution.getId()]['OriginDomainNames'] = '';
-			
-			aOrigins = stDistribution.getOrigins().getItems();
-			for (stOrigin in aOrigins) {
-				stDistributions[stDistribution.getId()]['OriginDomainNames'] = ListAppend(stDistributions[stDistribution.getId()]['OriginDomainNames'], stOrigin.getDomainName());
+
+				stDistributions[stDistribution.id()] = {};
+				stDistributions[stDistribution.id()]['DomainName'] = stDistribution.domainName();
+				stDistributions[stDistribution.id()]['OriginDomainNames'] = '';
+
+				aOrigins = stDistribution.origins().items();
+				for (stOrigin in aOrigins) {
+					stDistributions[stDistribution.id()]['OriginDomainNames'] = ListAppend(stDistributions[stDistribution.id()]['OriginDomainNames'], stOrigin.domainName());
+				}
 			}
-	
-	}
+
 			return stDistributions;
-			
+
 		}
-		
+
 	public struct function getInvalidateById(
 		required string InvalidationId,
 		string distributionName="",
 		string distributionId="",
 	) {
 			var status = '#arguments.InvalidationId# not found';
-			
-			var accessID       = application.fapi.getConfig('awscloudfront','accessID');
-			var secretKey      = application.fapi.getConfig('awscloudfront','secretKey');
 			var distributionId = getDistributionId(ARGUMENTS.distributionName, ARGUMENTS.distributionId);
 
 		try {
 			var cloudFrontService = getClient();
-			
-			var InvalidationRequest = createobject("java","com.amazonaws.services.cloudfront.model.GetInvalidationRequest").init();
-			InvalidationRequest.setId(arguments.InvalidationId);
-			InvalidationRequest.setDistributionId(distributionId);
-			
-			var invalidation = cloudFrontService.getInvalidation(InvalidationRequest);
-			var i = invalidation.getInvalidation();
-			var stResult = {"InvalidationId": i.getId(), "CreateTime": i.getCreateTime(), "Status": i.getStatus(), "Path": i.getInvalidationBatch().getPaths().getItems()[1]};
 
-				
+			var InvalidationRequest = createobject("java","software.amazon.awssdk.services.cloudfront.model.GetInvalidationRequest")
+				.builder()
+				.id(arguments.InvalidationId)
+				.distributionId(distributionId)
+				.build();
+
+			var invalidation = cloudFrontService.getInvalidation(InvalidationRequest);
+			var i = invalidation.invalidation();
+			var stResult = {
+				"InvalidationId": i.id(),
+				"CreateTime": i.createTime(),
+				"Status": i.status(),
+				"Path": i.invalidationBatch().paths().items()[1]
+			};
+
+
 		} catch (any error) {
 			dump(var=arguments, label="getInvalidateStatus: no invalitions for this distribution");
 			dump(var=error, label="Error", abort=true);
 		}
-		
-		return stResult
-	}	
-	
-	
+
+		return stResult;
+	}
+
+
     private any function getClient(){
 		var accessID  = application.fapi.getConfig('awscloudfront','accessID');
 		var secretKey = application.fapi.getConfig('awscloudfront','secretKey');
-		
-		var credentials            = createobject("java","com.amazonaws.auth.BasicAWSCredentials").init(accessID, secretKey);
-		var AmazonCloudFrontClient = createobject("java","com.amazonaws.services.cloudfront.AmazonCloudFrontClient").init(credentials);
-	
-		return AmazonCloudFrontClient;
+		var regionName  = application.fapi.getConfig('awscloudfront','region', 'us-east-1');
 
+		if (len(accessID) AND len(secretKey)) {
+			writeLog(file="cloudfront", text="getClient: using StaticCredentialsProvider (FarCry config awscloudfront.accessID/secretKey)");
+			var credentials = createobject("java","software.amazon.awssdk.auth.credentials.AwsBasicCredentials").create(accessID, secretKey);
+			var credentialsProvider = createobject("java","software.amazon.awssdk.auth.credentials.StaticCredentialsProvider").create(credentials);
+		} else {
+			writeLog(file="cloudfront", text="getClient: using DefaultCredentialsProvider (IAM role / env vars / credentials chain)");
+			var credentialsProvider = createobject("java","software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider").create();
+		}
+
+		var region = createobject("java","software.amazon.awssdk.regions.Region").of(regionName);
+		var CloudFrontClient = createobject("java","software.amazon.awssdk.services.cloudfront.CloudFrontClient")
+			.builder()
+			.region(region)
+			.credentialsProvider(credentialsProvider)
+			.build();
+
+		return CloudFrontClient;
     }
-    
+
 	private string function getDistributionId(
 		string distributionName="",
 		string distributionId=""
 	) {
-	
+
 		if (ARGUMENTS.distributionId != '')
 			distributionId = ARGUMENTS.distributionId;
 		else if (ARGUMENTS.distributionName == 'WEB') {
@@ -182,7 +211,7 @@ component displayname="AWS CloudFront Library" {
 			}
 		} else {
 			throw(type='cloudfront.getDistributionId.distribution', message="Distribution must be Distibution ID or Name [WEB|CDN]", detail="distributionId='#ARGUMENTS.distribution#'. distributionName='#ARGUMENTS.distributionName#'");
-		}	
+		}
 		return distributionId;
 
 	}
