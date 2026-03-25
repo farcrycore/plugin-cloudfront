@@ -8,15 +8,6 @@
 	<cfparam name="URL.debug"          default="0">
 	<cfparam name="URL.formName"       default="URL">
 
-	<cfset accessID  = application.fapi.getConfig('awscloudfront','accessID', '')>
-	<cfset secretKey = application.fapi.getConfig('awscloudfront','secretKey', '')>
-	
-	
-	<cfif accessID EQ '' OR secretKey EQ ''>
-		<cfoutput><h2 style="color:red">Secret and Key not set ip</h2></cfoutput>
-		<cfabort>
-	</cfif>
-	
 	<cfset oCloudFront = application.fc.lib.cloudfront />
 	<cfset stDistributions = oCloudFront.getDistributions() />
 
@@ -63,7 +54,20 @@
 	</cfoutput>
 
 	<cfcatch>
-		<cfdump var="#CFCATCH#" label="ERROR" abort="YES"  />
+		<cfoutput>
+		<div class="alert alert-danger">
+			<h3>CloudFront Error</h3>
+			<p><strong>#cfcatch.message#</strong></p>
+			<cfif len(cfcatch.detail)><p>#cfcatch.detail#</p></cfif>
+			<hr />
+			<p>Check that AWS credentials are configured via one of:</p>
+			<ul>
+				<li>FarCry config: <code>awscloudfront.accessID</code> / <code>awscloudfront.secretKey</code></li>
+				<li>Environment variables: <code>AWS_ACCESS_KEY_ID</code> / <code>AWS_SECRET_ACCESS_KEY</code></li>
+				<li>IAM role attached to the ECS task</li>
+			</ul>
+		</div>
+		</cfoutput>
 	</cfcatch>
 </cftry>
 
